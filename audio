@@ -1,5 +1,6 @@
 import os
 import threading
+import sys
 import time
 import tkinter.messagebox
 from tkinter import *
@@ -7,18 +8,18 @@ from tkinter import filedialog
 from tkinter import ttk
 from ttkthemes import themed_tk as tk
 from PIL import ImageTk
-
+import platform
+from CollapsablePane import CollapsiblePane as clp
 from mutagen.mp3 import MP3
 from pygame import mixer
 
+
 root = tk.ThemedTk()
 root.get_themes()  # Returns a list of all themes that can be set
-root.set_theme("aqua")  # Sets an available theme
-
-# Fonts - Arial (corresponds to Helvetica), Courier New (Courier), Comic Sans MS, Fixedsys,
-# MS Sans Serif, MS Serif, Symbol, System, Times New Roman (Times), and Verdana
-#
-# Styles - normal, bold, roman, italic, underline, and overstrike.
+if platform.system() == "Darwin":
+    root.set_theme("aqua")
+else:
+    root.set_theme("black")  # Sets an available theme
 
 statusBar = ttk.Label(root, text="Welcome to Music Player 1.0", relief=SUNKEN, anchor=W, font='Arial 10')
 statusBar.pack(side=BOTTOM, fill=X)
@@ -26,17 +27,16 @@ statusBar.pack(side=BOTTOM, fill=X)
 # Create the menubar
 menuBar = Menu(root)
 root.config(menu=menuBar)
-
 # Create the submenu
 
 subMenu = Menu(menuBar, tearoff=0)
 
 playlist = []
 
-
 # playlist - contains the full path + filename
 # playlistbox - contains just the filename
 # Fullpath + filename is required to play the music inside play_music load function
+
 
 def browse_file():
     global filename_path
@@ -79,11 +79,22 @@ root.iconbitmap(r"images/music.ico")
 leftFrame = Frame(root)
 leftFrame.pack(side=LEFT, padx=30, pady=30)
 
+
 playlistBox = Listbox(leftFrame)
 playlistBox.pack()
 
 addBtn = ttk.Button(leftFrame, text="+ Add", command=browse_file)
 addBtn.pack(side=LEFT)
+
+cpane = clp(root.mainloop(), "MENU", "COLLAPSE MENU")
+cpane.grid(row = 0, column = 0)
+cpane.pack()
+button = Button(cpane.frame).pack()
+b1 = Button(cpane.frame, text="GFG").grid(
+    row=1, column=2, pady=10)
+
+cb1 = Checkbutton(cpane.frame, text="GFG").grid(
+    row=2, column=3, pady=10)
 
 
 def del_song():
@@ -187,7 +198,7 @@ def pause_music():
 
 def rewind_music():
     play_music()
-    statusBar['text'] = "Music Rewinded"
+    statusBar['text'] = "Rewinding..."
 
 
 def set_vol(val):
@@ -257,3 +268,4 @@ root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
 # <div>Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
 # <div>Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+
