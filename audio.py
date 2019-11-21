@@ -14,6 +14,10 @@ import platform
 from CollapsablePane import CollapsiblePane as clp
 from mutagen.mp3 import MP3
 from pygame import mixer
+import wave
+from scipy import signal
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 root = tk.ThemedTk()
@@ -107,12 +111,12 @@ rightFrame.pack(pady=30)
 
 topFrame = Frame(rightFrame)
 topFrame.pack()
+currentTimeLabel = ttk.Label(topFrame, text='')
+currentTimeLabel.pack(side=LEFT, pady = 5)
+lengthLabel = ttk.Label(topFrame, text='--:--')
+lengthLabel.pack(side=LEFT, pady = 5)
 
-lengthLabel = ttk.Label(topFrame, text='Total Length : --:--')
-lengthLabel.pack(pady=5)
 
-currentTimeLabel = ttk.Label(topFrame, text='Current Time : --:--', relief=GROOVE)
-currentTimeLabel.pack()
 
 
 def show_details(play_song):
@@ -124,13 +128,26 @@ def show_details(play_song):
     else:
         a = mixer.Sound(play_song)
         total_length = a.get_length()
+        if file_data[1] == '.wav':
+            signal_wave = wave.open(play_song, "r")
+            sample_frequency = 16000
+            data = np.fromstring(signal_wave.readframes(sample_frequency), dtype=np.int16)
+            sig = signal_wave.readframes(-1)
+            sig = np.fromstring(sig, 'Int16')
+            sig = sig[:]
+            plt.figure(1)
+            a = plt.subplot(211)
+            plt.plot(sig)
+            c = plt.subplot(212)
+            Pxx, freqs, bins, im = c.specgram(sig, NFFT=1024, Fs=16000, noverlap=900)
+            plt.show()
 
     # div - total_length/60, mod - total_length % 60
     mins, secs = divmod(total_length, 60)
     mins = round(mins)
     secs = round(secs)
     timeFormat = '{:02d}:{:02d}'.format(mins, secs)
-    lengthLabel['text'] = "Total Length" + ' - ' + timeFormat
+    lengthLabel['text'] = timeFormat
 
     t1 = threading.Thread(target=start_count, args=(total_length,))
     t1.start()
@@ -149,7 +166,7 @@ def start_count(t):
             mins = round(mins)
             secs = round(secs)
             timeFormat = '{:02d}:{:02d}'.format(mins, secs)
-            currentTimeLabel['text'] = "Current Time" + ' - ' + timeFormat
+            currentTimeLabel['text'] = timeFormat + '/'
             time.sleep(1)
             current_time += 1
 
