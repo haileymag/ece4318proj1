@@ -15,6 +15,7 @@ from pygame import mixer
 import wave
 from scipy import signal
 import numpy as np
+import time
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -88,7 +89,7 @@ leftFrame.pack(side=LEFT, padx=30, pady=30)
 playlistBox = Listbox(leftFrame)
 playlistBox.pack()
 
-addBtn = ttk.Button(leftFrame, text="+ Add", command=browse_file)
+addBtn = ttk.Button(leftFrame, text=u"\u256C", command=browse_file)
 addBtn.pack(side=LEFT)
 
 
@@ -99,7 +100,7 @@ def del_song():
     playlist.pop(selected_song)
 
 
-delBtn = ttk.Button(leftFrame, text="- Del", command=del_song)
+delBtn = ttk.Button(leftFrame, text=u"\u2550", command=del_song)
 delBtn.pack(side=LEFT)
 
 rightFrame = Frame(root)
@@ -113,31 +114,32 @@ lengthLabel = ttk.Label(topFrame, text='--:--')
 lengthLabel.pack(side=LEFT, pady = 5)
 
 
-
-
 def show_details(play_song):
     file_data = os.path.splitext(play_song)
 
     if file_data[1] == '.mp3':
         audio = MP3(play_song)
         total_length = audio.info.length
+    if file_data[1] == '.wav':
+        a = mixer.Sound(play_song)
+        total_length = a.get_length()
+        # time.sleep(5)
+        # signal_wave = wave.open(play_song, 'r')
+        # sample_frequency = 16000
+        # data = np.frombuffer(signal_wave.readframes(sample_frequency), dtype=np.int16)
+        # sig = signal_wave.readframes(-1)
+        # sig = np.frombuffer(sig, dtype='int16')
+        # sig = sig[:]
+        # figure = plt.Figure(figsize=(6, 5), dpi=100)
+        # c = figure.add_subplot(212)
+        # Pxx, freqs, bins, im = c.specgram(sig, NFFT=1024, Fs=16000, noverlap=900)
+        # plt.axis('off')
+        # chart_type = FigureCanvasTkAgg(figure, root)
+        # chart_type.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+        # time.sleep(5)
     else:
         a = mixer.Sound(play_song)
         total_length = a.get_length()
-        if file_data[1] == '.wav':
-            signal_wave = wave.open(play_song, 'r')
-            sample_frequency = 16000
-            data = np.frombuffer(signal_wave.readframes(sample_frequency), dtype=np.int16)
-            sig = signal_wave.readframes(-1)
-            sig = np.frombuffer(sig, dtype='int16')
-            sig = sig[:]
-            figure = plt.Figure(figsize=(6, 5), dpi=100)
-            c = figure.add_subplot(212)
-            Pxx, freqs, bins, im = c.specgram(sig, NFFT=1024, Fs=16000, noverlap=900)
-            plt.axis('off')
-            chart_type = FigureCanvasTkAgg(figure, root)
-            chart_type.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-
     # div - total_length/60, mod - total_length % 60
     mins, secs = divmod(total_length, 60)
     mins = round(mins)
@@ -183,7 +185,7 @@ def play_music():
             play_it = playlist[selected_song]
             mixer.music.load(play_it)
             mixer.music.play()
-            statusBar['text'] = "Playing music" + ' - ' + os.path.basename(play_it)
+            statusBar['text'] = "Playing " + ' - ' + os.path.basename(play_it)
             show_details(play_it)
         except:
             tkinter.messagebox.showerror('File not found', 'Music Player could not find the file. Please check again.')
