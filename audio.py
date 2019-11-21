@@ -9,15 +9,14 @@ from tkinter import ttk
 from tkinter import *
 from tkinter.ttk import *
 from ttkthemes import themed_tk as tk
-from PIL import ImageTk
 import platform
-from CollapsablePane import CollapsiblePane as clp
 from mutagen.mp3 import MP3
 from pygame import mixer
 import wave
 from scipy import signal
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 root = tk.ThemedTk()
@@ -92,9 +91,6 @@ playlistBox.pack()
 addBtn = ttk.Button(leftFrame, text="+ Add", command=browse_file)
 addBtn.pack(side=LEFT)
 
-cPane = clp(root, 'item', ['1'])
-cPane.pack(side="top", fill="x")
-
 
 def del_song():
     selected_song = playlistBox.curselection()
@@ -129,18 +125,18 @@ def show_details(play_song):
         a = mixer.Sound(play_song)
         total_length = a.get_length()
         if file_data[1] == '.wav':
-            signal_wave = wave.open(play_song, "r")
+            signal_wave = wave.open(play_song, 'r')
             sample_frequency = 16000
-            data = np.fromstring(signal_wave.readframes(sample_frequency), dtype=np.int16)
+            data = np.frombuffer(signal_wave.readframes(sample_frequency), dtype=np.int16)
             sig = signal_wave.readframes(-1)
-            sig = np.fromstring(sig, 'Int16')
+            sig = np.frombuffer(sig, dtype='int16')
             sig = sig[:]
-            plt.figure(1)
-            a = plt.subplot(211)
-            plt.plot(sig)
-            c = plt.subplot(212)
+            figure = plt.Figure(figsize=(6, 5), dpi=100)
+            c = figure.add_subplot(212)
             Pxx, freqs, bins, im = c.specgram(sig, NFFT=1024, Fs=16000, noverlap=900)
-            plt.show()
+            plt.axis('off')
+            chart_type = FigureCanvasTkAgg(figure, root)
+            chart_type.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
 
     # div - total_length/60, mod - total_length % 60
     mins, secs = divmod(total_length, 60)
@@ -226,12 +222,10 @@ def mute_music():
     global muted
     if muted:  # Unmute the music
         mixer.music.set_volume(0.7)
-        volumeBtn.configure(image=volumePhoto)
         scale.set(70)
         muted = FALSE
     else:  # mute the music
         mixer.music.set_volume(0)
-        volumeBtn.configure(image=mutePhoto)
         scale.set(0)
         muted = TRUE
 
@@ -239,16 +233,13 @@ def mute_music():
 middleFrame = Frame(rightFrame)
 middleFrame.pack(pady=30, padx=30)
 
-playPhoto = ImageTk.PhotoImage(file=r"images/play.png")
-playBtn = ttk.Button(middleFrame, image=playPhoto, command=play_music)
-playBtn.grid(row=0, column=0, padx=10)
+stopBtn = ttk.Button(middleFrame, text=u"\u25A2", command=stop_music)
+stopBtn.grid(row=0, column=0, padx=10)
 
-stopPhoto = ImageTk.PhotoImage(file=r"images/stop.png")
-stopBtn = ttk.Button(middleFrame, image=stopPhoto, command=stop_music)
-stopBtn.grid(row=0, column=1, padx=10)
+playBtn = ttk.Button(middleFrame, text=u"\u25B7", command=play_music)
+playBtn.grid(row=0, column=1, padx=10)
 
-pausePhoto = ImageTk.PhotoImage(file=r"images/pause.png")
-pauseBtn = ttk.Button(middleFrame, image=pausePhoto, command=pause_music)
+pauseBtn = ttk.Button(middleFrame, text=u"\u259A", command=pause_music)
 pauseBtn.grid(row=0, column=2, padx=10)
 
 # Bottom Frame for volume, rewind, mute etc.
@@ -256,13 +247,11 @@ pauseBtn.grid(row=0, column=2, padx=10)
 bottomFrame = Frame(rightFrame)
 bottomFrame.pack()
 
-rewindPhoto = ImageTk.PhotoImage(file=r"images/rewind.png")
-rewindBtn = ttk.Button(bottomFrame, image=rewindPhoto, command=rewind_music)
+
+rewindBtn = ttk.Button(bottomFrame, text=u"\u25C1", command=rewind_music)
 rewindBtn.grid(row=0, column=0)
 
-mutePhoto = ImageTk.PhotoImage(file=r"images/mute.png")
-volumePhoto = ImageTk.PhotoImage(file=r"images/unmute.png")
-volumeBtn = ttk.Button(bottomFrame, image=volumePhoto, command=mute_music)
+volumeBtn = ttk.Button(bottomFrame, text=u"\u259F", command=mute_music)
 volumeBtn.grid(row=0, column=1)
 
 scale = ttk.Scale(bottomFrame, from_=0, to=100, orient=HORIZONTAL, command=set_vol)

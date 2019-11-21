@@ -14,10 +14,11 @@ import wave
 from scipy import signal
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-# root = themed_tk.ThemedTk()
-# root.get_themes()  # Returns a list of all themes that can be set
-# root.set_theme("radiance")  # Sets an available theme
+root = themed_tk.ThemedTk()
+root.get_themes()  # Returns a list of all themes that can be set
+root.set_theme("radiance")  # Sets an available theme
 
 signal_wave = wave.open('Lanquidity.wav', 'r')
 sample_frequency = 16000
@@ -25,12 +26,12 @@ data = np.frombuffer(signal_wave.readframes(sample_frequency), dtype=np.int16)
 sig = signal_wave.readframes(-1)
 sig = np.frombuffer(sig, dtype='int16')
 sig = sig[:]
-# plt.figure(1)
-a = plt.subplot(211)
-# plt.plot(sig)
-c = plt.subplot(212)
+figure = plt.Figure(figsize=(6, 5), dpi=100)
+c = figure.add_subplot(212)
 Pxx, freqs, bins, im = c.specgram(sig, NFFT=1024, Fs=16000, noverlap=900)
 plt.axis('off')
-plt.show()
+chart_type = FigureCanvasTkAgg(figure, root)
+chart_type.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+# plt.show()
 
-# root.mainloop()
+root.mainloop()
