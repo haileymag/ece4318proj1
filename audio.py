@@ -120,11 +120,21 @@ def show_details(play_song):
     if file_data[1] == '.mp3':
         audio = MP3(play_song)
         total_length = audio.info.length
-    if file_data[1] == '.wav':
+    elif file_data[1] == '.wav':
         a = mixer.Sound(play_song)
         total_length = a.get_length()
-        # time.sleep(5)
-        # signal_wave = wave.open(play_song, 'r')
+        signal_wave = wave.open('Lanquidity.wav', 'r')
+        sample_frequency = 16000
+        data = np.frombuffer(signal_wave.readframes(sample_frequency), dtype=np.int16)
+        sig = signal_wave.readframes(-1)
+        sig = np.frombuffer(sig, dtype='int16')
+        sig = sig[:]
+        c = plt.subplot(212)
+        Pxx, freqs, bins, im = c.specgram(sig, NFFT=1024, Fs=16000, noverlap=900)
+        plt.axis('off')
+        plt.show()
+        # testing to see if it's an issue with it binding to the main root, it is. there is an issue with it being able to do multiple processes. I might call it after this function.
+        # signal_wave = wave.open('Lanquidity.wav', 'r')
         # sample_frequency = 16000
         # data = np.frombuffer(signal_wave.readframes(sample_frequency), dtype=np.int16)
         # sig = signal_wave.readframes(-1)
@@ -133,10 +143,11 @@ def show_details(play_song):
         # figure = plt.Figure(figsize=(6, 5), dpi=100)
         # c = figure.add_subplot(212)
         # Pxx, freqs, bins, im = c.specgram(sig, NFFT=1024, Fs=16000, noverlap=900)
-        # plt.axis('off')
+        # c.axis('off')
+        # c.axis('tight')
         # chart_type = FigureCanvasTkAgg(figure, root)
-        # chart_type.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-        # time.sleep(5)
+        # chart_type.get_tk_widget().draw()
+            # .pack(side=tk.LEFT, fill=tk.BOTH)
     else:
         a = mixer.Sound(play_song)
         total_length = a.get_length()
