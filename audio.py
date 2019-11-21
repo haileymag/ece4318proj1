@@ -1,11 +1,13 @@
 import os
+
 import threading
-import sys
 import time
 import tkinter.messagebox
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
+from tkinter import *
+from tkinter.ttk import *
 from ttkthemes import themed_tk as tk
 from PIL import ImageTk
 import platform
@@ -86,15 +88,8 @@ playlistBox.pack()
 addBtn = ttk.Button(leftFrame, text="+ Add", command=browse_file)
 addBtn.pack(side=LEFT)
 
-cpane = clp(root.mainloop(), "MENU", "COLLAPSE MENU")
-cpane.grid(row = 0, column = 0)
-cpane.pack()
-button = Button(cpane.frame).pack()
-b1 = Button(cpane.frame, text="GFG").grid(
-    row=1, column=2, pady=10)
-
-cb1 = Checkbutton(cpane.frame, text="GFG").grid(
-    row=2, column=3, pady=10)
+cPane = clp(root, 'item', ['1'])
+cPane.pack(side="top", fill="x")
 
 
 def del_song():
@@ -249,7 +244,7 @@ rewindBtn = ttk.Button(bottomFrame, image=rewindPhoto, command=rewind_music)
 rewindBtn.grid(row=0, column=0)
 
 mutePhoto = ImageTk.PhotoImage(file=r"images/mute.png")
-volumePhoto = ImageTk.PhotoImage(file=r"images/again.png")
+volumePhoto = ImageTk.PhotoImage(file=r"images/unmute.png")
 volumeBtn = ttk.Button(bottomFrame, image=volumePhoto, command=mute_music)
 volumeBtn.grid(row=0, column=1)
 
