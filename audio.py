@@ -1,7 +1,9 @@
 import os
-
+import math
+import random
 import threading
 import time
+import codecs
 import tkinter.messagebox
 from tkinter import *
 from tkinter import filedialog
@@ -18,7 +20,6 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
 
 root = tk.ThemedTk()
 root.get_themes()  # Returns a list of all themes that can be set
@@ -39,6 +40,7 @@ subMenu = Menu(menuBar, tearoff=0)
 
 playlist = []
 
+
 # playlist - contains the full path + filename
 # playlistbox - contains just the filename
 # Fullpath + filename is required to play the music inside play_music load function
@@ -47,21 +49,52 @@ playlist = []
 def browse_file():
     global filename_path
     filename_path = filedialog.askopenfilename()
-    add_to_playlist(filename_path)
-
-    mixer.music.queue(filename_path)
+    file_ext = os.path.splitext(filename_path)[1]
+    if (file_ext == ".m3u8"):
+        m3u8 = codecs.open(filename_path, "r", "utf-8")
+        for line in m3u:
+            if (os.path.isfile(line.rstrip())):
+                add_to_playlist(line.rstrip())
+        m3u8.close()
+    else:
+        print(filename_path)
+        add_to_playlist(filename_path)
+        mixer.music.queue(filename_path)
 
 
 def add_to_playlist(filename):
-    filename = os.path.basename(filename)
+    # filename = os.path.basename(filename)
     index = 0
-    playlistBox.insert(index, filename)
-    playlist.insert(index, filename_path)
+    playlistBox.insert(index, os.path.basename(filename))
+    playlist.insert(index, filename)
     index += 1
+
+
+def shuffle_playlist():
+    playlistBox.delete(0, END)
+    for idx in range(len(playlist)):
+        r = math.floor(random.random() * (idx + 1))
+        swap = playlist[r]
+        playlist[r] = playlist[idx]
+        playlist[idx] = swap
+
+    for idx, song in enumerate(playlist):
+        playlistBox.insert(idx, os.path.basename(song))
+
+
+def save_playlist():
+    filename_save_path = filedialog.asksaveasfilename(title="Save playlist as",
+                                                      filetypes=(("M3U8 Playlist", "*.m3u8"), ("all files", "*.*")))
+    m3u8 = codecs.open(os.path.splitext(filename_save_path)[0] + ".m3u8", "w",
+                       "utf-8")  # can save files with utf-8 characters
+    for song in playlist:
+        m3u.write(song.replace("/", "\\") + "\n")
+    m3u8.close()
 
 
 menuBar.add_cascade(label="File", menu=subMenu)
 subMenu.add_command(label="Open", command=browse_file)
+subMenu.add_command(label="Save Playlist", command=save_playlist)
 subMenu.add_command(label="Exit", command=root.destroy)
 
 
@@ -76,15 +109,16 @@ subMenu.add_command(label="About Us", command=about_us)
 mixer.init()  # initializing the mixer
 
 root.title("Music Player")
-root.iconbitmap(r"images/music.ico")
-
+# root.tk.call('wm', 'iconphoto', root, PhotoImage(file=r'images/music.png'))
+# root.iconbitmap(r'images/music.ico')
+p1 = PhotoImage( file = r'music.png')
+root.iconphoto(False, p1)
 # Root Window - StatusBar, LeftFrame, RightFrame
 # LeftFrame - The listbox (playlist)
 # RightFrame - TopFrame,MiddleFrame and the BottomFrame
 
 leftFrame = Frame(root)
 leftFrame.pack(side=LEFT, padx=30, pady=30)
-
 
 playlistBox = Listbox(leftFrame)
 playlistBox.pack()
@@ -103,15 +137,18 @@ def del_song():
 delBtn = ttk.Button(leftFrame, text=u"\u2550", command=del_song)
 delBtn.pack(side=LEFT)
 
+shufBtn = ttk.Button(leftFrame, text="Shuffle", command=shuffle_playlist)
+shufBtn.pack(side=LEFT)
+
 rightFrame = Frame(root)
 rightFrame.pack(pady=30)
 
 topFrame = Frame(rightFrame)
 topFrame.pack()
 currentTimeLabel = ttk.Label(topFrame, text='')
-currentTimeLabel.pack(side=LEFT, pady = 5)
+currentTimeLabel.pack(side=LEFT, pady=5)
 lengthLabel = ttk.Label(topFrame, text='--:--')
-lengthLabel.pack(side=LEFT, pady = 5)
+lengthLabel.pack(side=LEFT, pady=5)
 
 
 def show_details(play_song):
@@ -133,7 +170,8 @@ def show_details(play_song):
         Pxx, freqs, bins, im = c.specgram(sig, NFFT=1024, Fs=16000, noverlap=900)
         plt.axis('off')
         plt.show()
-        # testing to see if it's an issue with it binding to the main root, it is. there is an issue with it being able to do multiple processes. I might call it after this function.
+        # testing to see if it's an issue with it binding to the main root,
+        # it is. there is an issue with it being able to do multiple processes.
         # signal_wave = wave.open('Lanquidity.wav', 'r')
         # sample_frequency = 16000
         # data = np.frombuffer(signal_wave.readframes(sample_frequency), dtype=np.int16)
@@ -147,7 +185,7 @@ def show_details(play_song):
         # c.axis('tight')
         # chart_type = FigureCanvasTkAgg(figure, root)
         # chart_type.get_tk_widget().draw()
-            # .pack(side=tk.LEFT, fill=tk.BOTH)
+        # .pack(side=tk.LEFT, fill=tk.BOTH)
     else:
         a = mixer.Sound(play_song)
         total_length = a.get_length()
@@ -190,6 +228,7 @@ def play_music():
     else:
         try:
             stop_music()
+
             time.sleep(1)
             selected_song = playlistBox.curselection()
             selected_song = int(selected_song[0])
@@ -229,15 +268,17 @@ def set_vol(val):
 
 
 muted = FALSE
+prevVolume = 0.7
 
 
 def mute_music():
-    global muted
+    global muted, prevVolume
     if muted:  # Unmute the music
-        mixer.music.set_volume(0.7)
-        scale.set(70)
+        mixer.music.set_volume(prevVolume)
+        scale.set(prevVolume * 100)
         muted = FALSE
     else:  # mute the music
+        prevVolume = mixer.music.get_volume()
         mixer.music.set_volume(0)
         scale.set(0)
         muted = TRUE
@@ -259,7 +300,6 @@ pauseBtn.grid(row=0, column=2, padx=10)
 
 bottomFrame = Frame(rightFrame)
 bottomFrame.pack()
-
 
 rewindBtn = ttk.Button(bottomFrame, text=u"\u25C1", command=rewind_music)
 rewindBtn.grid(row=0, column=0)
