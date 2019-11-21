@@ -15,11 +15,9 @@ import platform
 from mutagen.mp3 import MP3
 from pygame import mixer
 import wave
-from scipy import signal
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 root = tk.ThemedTk()
 root.get_themes()  # Returns a list of all themes that can be set
@@ -27,6 +25,7 @@ if platform.system() == "Darwin":
     root.set_theme("aqua")
 else:
     root.set_theme("black")  # Sets an available theme
+    root.iconbitmap(r'icon.ico')
 
 statusBar = ttk.Label(root, text="Welcome to Music Player 1.0", relief=SUNKEN, anchor=W, font='Arial 10')
 statusBar.pack(side=BOTTOM, fill=X)
@@ -109,10 +108,8 @@ subMenu.add_command(label="About Us", command=about_us)
 mixer.init()  # initializing the mixer
 
 root.title("Music Player")
-# root.tk.call('wm', 'iconphoto', root, PhotoImage(file=r'images/music.png'))
-# root.iconbitmap(r'images/music.ico')
-p1 = PhotoImage( file = r'music.png')
-root.iconphoto(False, p1)
+root.resizable(False, False)
+
 # Root Window - StatusBar, LeftFrame, RightFrame
 # LeftFrame - The listbox (playlist)
 # RightFrame - TopFrame,MiddleFrame and the BottomFrame
@@ -141,7 +138,7 @@ shufBtn = ttk.Button(leftFrame, text="Shuffle", command=shuffle_playlist)
 shufBtn.pack(side=LEFT)
 
 rightFrame = Frame(root)
-rightFrame.pack(pady=30)
+rightFrame.pack(pady=30, padx= 30)
 
 topFrame = Frame(rightFrame)
 topFrame.pack()
@@ -160,7 +157,7 @@ def show_details(play_song):
     elif file_data[1] == '.wav':
         a = mixer.Sound(play_song)
         total_length = a.get_length()
-        signal_wave = wave.open('Lanquidity.wav', 'r')
+        signal_wave = wave.open(play_song, 'r')
         sample_frequency = 16000
         data = np.frombuffer(signal_wave.readframes(sample_frequency), dtype=np.int16)
         sig = signal_wave.readframes(-1)
@@ -170,22 +167,9 @@ def show_details(play_song):
         Pxx, freqs, bins, im = c.specgram(sig, NFFT=1024, Fs=16000, noverlap=900)
         plt.axis('off')
         plt.show()
-        # testing to see if it's an issue with it binding to the main root,
-        # it is. there is an issue with it being able to do multiple processes.
-        # signal_wave = wave.open('Lanquidity.wav', 'r')
-        # sample_frequency = 16000
-        # data = np.frombuffer(signal_wave.readframes(sample_frequency), dtype=np.int16)
-        # sig = signal_wave.readframes(-1)
-        # sig = np.frombuffer(sig, dtype='int16')
-        # sig = sig[:]
-        # figure = plt.Figure(figsize=(6, 5), dpi=100)
-        # c = figure.add_subplot(212)
-        # Pxx, freqs, bins, im = c.specgram(sig, NFFT=1024, Fs=16000, noverlap=900)
-        # c.axis('off')
-        # c.axis('tight')
-        # chart_type = FigureCanvasTkAgg(figure, root)
-        # chart_type.get_tk_widget().draw()
-        # .pack(side=tk.LEFT, fill=tk.BOTH)
+        time.sleep(10)
+        plt.close()
+
     else:
         a = mixer.Sound(play_song)
         total_length = a.get_length()
@@ -320,6 +304,4 @@ def on_closing():
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
-# <div>Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
-# <div>Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
 
